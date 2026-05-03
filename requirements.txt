@@ -1,0 +1,2 @@
+Fastapi
+PyQt5
