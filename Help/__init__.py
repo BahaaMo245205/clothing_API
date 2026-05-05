@@ -1,19 +1,23 @@
 import sqlite3
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, 'database', 'shop.db')
 
 class Sql:
-    def __init__(self, pathfile: str = "./database/shop.db"):
+    def __init__(self, pathfile: str = db_path):
         self.PathFile = pathfile
 
     def CreateTable(self):
         """ Create Table shop """
-        pathf = os.path.exists(self.PathFile)
-        if not pathf:
-            try:
-                with sqlite3.connect(self.PathFile) as conn:
-                    cur = conn.cursor()
-                    cur.execute("""
+        db_dir = os.path.dirname(self.PathFile)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        try:
+            with sqlite3.connect(self.PathFile) as conn:
+                cur = conn.cursor()
+                cur.executescript("""
 -- 1. جدول المنتجات
 CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,9 +46,9 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 """)
-                    conn.commit()
-            except sqlite3.Error as se:
-                print(f"Error Sql : {se}")
+                conn.commit()
+        except sqlite3.Error as se:
+            print(f"Error Sql : {se}")
 
     def RunCode(self, codesql: str = "", values: tuple = ()):
         """ Run code SQL """
