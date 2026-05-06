@@ -1,9 +1,12 @@
-import sys, os ,shutil
+import sys, os, shutil
 from PyQt5 import uic, QtWidgets
-from Help import Sql
+from ConnactSQL import Sql
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
-sql = Sql()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "database", "shop.db")
+
+sql = Sql(pathfile=db_path)
 
 
 class Prog(QtWidgets.QWidget):
@@ -24,7 +27,7 @@ class Prog(QtWidgets.QWidget):
 
         self.LoadData()
         self.show()
-        
+
     def SelectImage(self):
         filePath, _ = QFileDialog.getOpenFileName(
             self,
@@ -32,28 +35,21 @@ class Prog(QtWidgets.QWidget):
             "",
             "Images (*.png *.jpg *.jpeg *.bmp);;All files (*.*)",
         )
-        
+
         if filePath:
-            # 1. تحديد اسم الفولدر اللي عايز تحفظ فيه الصور
-            target_folder = "Employee_Photos"
-            
-            # 2. التأكد إن الفولدر موجود، لو مش موجود هيعمله
+            target_folder = "Clothings_Photo"
+
             if not os.path.exists(target_folder):
                 os.makedirs(target_folder)
-            
-            # 3. الحصول على اسم الملف الأصلي (عشان نحفظه بنفس الاسم)
+
             filename = os.path.basename(filePath)
-            
-            # 4. تحديد المسار الجديد للملف
+
             destination_path = os.path.join(target_folder, filename)
-            
-            # 5. نسخ الملف
-            # ملاحظة: shutil.copy2 بيحافظ على بيانات الملف الأصلية
+
             shutil.copy2(filePath, destination_path)
-            
-            # 6. تحديث الـ lineEdit بالمسار الجديد أو اسم الملف
+
             self.lineEdit_5.setText(destination_path)
-            print(f"تم حفظ الصورة بنجاح في: {destination_path}")
+
     def ClearInputs(self):
         self.lineEdit.clear()  # ID
         self.lineEdit_2.clear()  # Name

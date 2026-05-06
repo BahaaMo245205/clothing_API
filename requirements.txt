@@ -1,2 +1,3 @@
 Fastapi
 PyQt5
+uvicorn
