@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS order_items (
                 return True
         except sqlite3.Error as se:
             print(f"Error sql database : {se}")
-            return None
+            return False
         except Exception as e:
             print(f"Error : {e}")
-            return None
+            return False

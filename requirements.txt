@@ -1,3 +1,5 @@
 Fastapi
 PyQt5
+pydantic[email]
 uvicorn
+hashlib

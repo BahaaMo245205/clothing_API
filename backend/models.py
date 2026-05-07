@@ -6,6 +6,12 @@ class UserRegistration(BaseModel):
     username: str
     email: EmailStr
     password: str
+    confirm_password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
 
 # موديل المنتج (عشان تستخدمه في الـ POST والـ GET)
 class ProductBase(BaseModel):
