@@ -18,11 +18,21 @@ class Sql:
             with sqlite3.connect(self.PathFile) as conn:
                 cur = conn.cursor()
                 cur.executescript("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    email TEXT NOT NULL,
-    password TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "username" TEXT NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
+    "password" TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "InfoUser" (
+    "ID" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "IdUser" INTEGER UNIQUE, -- لضمان إن كل يوزر له بروفايل واحد بس
+    "Image" TEXT NOT NULL,
+    "Phone" TEXT NOT NULL UNIQUE,
+    "Address" TEXT NOT NULL,
+    "gender" TEXT, -- ضفت لك الحقل ده عشان الكود بتاعك ما يضربش
+    FOREIGN KEY("IdUser") REFERENCES "users"("id") ON DELETE CASCADE
 );
 
 -- 1. جدول المنتجات
