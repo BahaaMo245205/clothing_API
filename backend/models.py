@@ -25,7 +25,6 @@ class UserLogin(BaseModel):
 
 # موديل الطلبية
 class OrderCreate(BaseModel):
-    customer_name: str
-    total_price: float
-    status: str = "pending"
-    items: List[dict]  # مثال: [{"product_id": 1, "quantity": 2}]
+    product_id : int
+    customer_id: int
+    count : int

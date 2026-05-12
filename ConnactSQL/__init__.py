@@ -48,9 +48,13 @@ CREATE TABLE IF NOT EXISTS products (
 -- 2. جدول الطلبيات
 CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER,
+    customer_id INTEGER,
     customer_name TEXT NOT NULL,
     total_price REAL NOT NULL,
-    status TEXT DEFAULT 'pending' -- (pending, shipped, delivered)
+    Address TEXT,
+    Date TEXT,
+    status TEXT DEFAULT 'pending'
 );
 
 -- 3. جدول تفاصيل الطلبية (الرابط)

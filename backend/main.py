@@ -3,6 +3,7 @@ from ConnactSQL import Sql
 from backend.models import UserRegistration, OrderCreate, InfoUser, UserLogin
 import os
 import sys
+from datetime import datetime
 import hashlib
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,6 +13,7 @@ app = FastAPI(description="""This Project About Clothing Store""", version="1.0.
 sql = Sql(db_path)
 
 
+# ============================(Users)=======================
 @app.get("/AllUsers")
 async def GetAllUsers():
     query = """
@@ -23,20 +25,33 @@ async def GetAllUsers():
     """
 
     fetched_data = sql.RunCode(query)
-
     result = []
+
     for row in fetched_data:
+        user_id = row[0]
+
+        # جلب الأوردرات وتحويلها لـ List of Dicts عشان تكون مفهومة في الـ Frontend
+        orders_data = sql.RunCode(
+            "SELECT id, total_price, Date, status FROM orders WHERE customer_id=?",
+            (user_id,),
+        )
+        user_orders = []
+        for o in orders_data:
+            user_orders.append(
+                {"order_id": o[0], "total": o[1], "date": o[2], "status": o[3]}
+            )
+
         result.append(
             {
-                "id": row[0],
+                "id": user_id,
                 "username": row[1],
                 "email": row[2],
-                "password": row[3],
                 "info": {
                     "image": row[4],
                     "phone": row[5],
                     "Address": row[6],
                 },
+                "Orders": user_orders,
             }
         )
 
@@ -170,6 +185,10 @@ async def UpdateInformationUser(infouser: InfoUser):
         )
 
 
+# ============================(Users)=======================
+
+
+# ============================(Products)=======================
 @app.get("/", description="""Get All Data about Clothing""")
 async def GetAllProducts():
     result = []
@@ -187,3 +206,79 @@ async def GetAllProducts():
         )
 
     return result
+
+@app.post("/CreateOrder")
+async def create_order(order: OrderCreate):
+    product_data = sql.RunCode(
+        "SELECT price, stock_quantity FROM products WHERE id=?", (order.product_id,)
+    )
+    if not product_data:
+        raise HTTPException(status_code=404, detail="المنتج غير موجود")
+
+    price_product = product_data[0][0]
+    current_stock = product_data[0][1]
+
+    if current_stock < order.count:
+        raise HTTPException(
+            status_code=400, detail=f"عفواً، الكمية المتاحة {current_stock} فقط"
+        )
+
+    user_info = sql.RunCode(
+        "SELECT username FROM users WHERE id=?", (order.customer_id,)
+    )
+    address_info = sql.RunCode(
+        "SELECT Address FROM InfoUser WHERE IdUser=?", (order.customer_id,)
+    )
+
+    if not user_info or not address_info:
+        raise HTTPException(
+            status_code=400, detail="بيانات المستخدم أو العنوان غير مكتملة"
+        )
+
+    total_price = price_product * order.count
+    time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        sql.RunCode(
+            "INSERT INTO orders (product_id, customer_id, customer_name, total_price, Address, Date) VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                order.product_id,
+                order.customer_id,
+                user_info[0][0],
+                total_price,
+                address_info[0][0],
+                time_now,
+            ),
+        )
+
+        sql.RunCode(
+            "UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?",
+            (order.count, order.product_id),
+        )
+
+        return {"Status": "Success", "Message": "تم تسجيل الطلب وتحديث المخزن بنجاح"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="حدث خطأ أثناء معالجة الطلب")
+
+@app.get("/GetAllOrders")
+async def GetAllOrders():
+    result = []
+    fetched_order = sql.RunCode("SELECT * FROM orders")
+    num_order = len(fetched_order)
+    for i in range(num_order):
+        result.append(
+            {
+                "id": fetched_order[i][0],
+                "product_id": fetched_order[i][1],
+                "customer_id": fetched_order[i][2],
+                "customer_name": fetched_order[i][3],
+                "total_price": fetched_order[i][4],
+                "Address": fetched_order[i][5],
+                "Date": fetched_order[i][6],
+                "status": fetched_order[i][7],
+            }
+        )
+
+    return result
+
+# ============================(Products)=======================
