@@ -1,6 +1,7 @@
 import sys, os, shutil
 from PyQt5 import uic, QtWidgets
 from ConnactSQL import Sql
+from datetime import datetime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -9,7 +10,7 @@ db_path = os.path.join(BASE_DIR, "database", "shop.db")
 sql = Sql(pathfile=db_path)
 
 
-class Prog(QtWidgets.QWidget):
+class Clothing(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +23,6 @@ class Prog(QtWidgets.QWidget):
         self.pushButton_4.clicked.connect(self.RemoveProduct)  # Remove
         self.pushButton_5.clicked.connect(self.ClearInputs)  # Clear
 
-        # Table Interactions
         self.tableWidget.itemClicked.connect(self.GetSelection)
         self.tableWidget_2.itemClicked.connect(self.GetOrderSelection)
 
@@ -180,39 +180,34 @@ class Prog(QtWidgets.QWidget):
             self.LoadOrders()
 
     def LoadOrders(self):
-        """Fetch orders from the database and populate tableWidget_2"""
-        self.tableWidget_2.setRowCount(0)
-        query = "SELECT id, customer_name, total_price, status, Date, Address FROM orders"
-        results = sql.RunCode(query)
-        
-        if results:
-            self.tableWidget_2.setColumnCount(6)
-            self.tableWidget_2.setHorizontalHeaderLabels(["ID", "Customer", "Total", "Status", "Date", "Address"])
-            for row_number, row_data in enumerate(results):
-                self.tableWidget_2.insertRow(row_number)
-                for column_number, data in enumerate(row_data):
-                    self.tableWidget_2.setItem(row_number, column_number, QtWidgets.QTableWidgetItem(str(data)))
-    def GetOrderSelection(self):
-            """Fill inputs when an order is clicked in tableWidget_2"""
-            row = self.tableWidget_2.currentRow()
+            """Fetch orders from the database and populate tableWidget_2"""
+            self.tableWidget_2.setRowCount(0)
+            query = "SELECT o.id, o.product_id ,p.name ,o.customer_name, o.total_price,o.count, o.status, o.Date, o.Address FROM orders o JOIN products  p ON o.product_id = p.id"
+            results = sql.RunCode(query)
             
-            if row != -1:
-                # التأكد من وجود بيانات في الصف المختار
-                item_id = self.tableWidget_2.item(row, 0)
-                if item_id is not None:
-                    # ترتيب البيانات بناءً على الصورة المرفقة image_9b8de0.png
-                    self.lineEdit_6.setText(self.tableWidget_2.item(row, 0).text())   # ID
-                    self.lineEdit_7.setText(self.tableWidget_2.item(row, 1).text())   # Name Customer
-                    self.lineEdit_8.setText(self.tableWidget_2.item(row, 2).text())   # Total Price
-                    self.lineEdit_9.setText(self.tableWidget_2.item(row, 3).text())   # Status / Count? (راجع ترتيب الأعمدة)
-                    self.lineEdit_10.setText(self.tableWidget_2.item(row, 4).text())  # Date
-                    
-                    # بالنسبة للـ Address (lineEdit_11) يظهر في الصورة كـ TextEdit أو LineEdit منفصل بالأسفل
-                    if self.tableWidget_2.item(row, 5):
-                        self.lineEdit_11.setText(self.tableWidget_2.item(row, 5).text()) # Address
+            if results:
+                for row_number, row_data in enumerate(results):
+                    self.tableWidget_2.insertRow(row_number)
+                    for column_number, data in enumerate(row_data):
+                        self.tableWidget_2.setItem(row_number, column_number, QtWidgets.QTableWidgetItem(str(data)))
+                        
+    def GetOrderSelection(self):
+        """Fill inputs when an order is clicked in tableWidget_2"""
+        row = self.tableWidget_2.currentRow()
         
+        if row != -1:
+            self.lineEdit_6.setText(self.tableWidget_2.item(row, 0).text())   
+            self.lineEdit_7.setText(self.tableWidget_2.item(row, 1).text())   
+            self.lineEdit_8.setText(self.tableWidget_2.item(row, 2).text())   
+            self.lineEdit_9.setText(self.tableWidget_2.item(row, 3).text())   
+            self.lineEdit_10.setText(self.tableWidget_2.item(row, 4).text())  
+            self.lineEdit_11.setText(self.tableWidget_2.item(row, 5).text())
+            self.lineEdit_12.setText(self.tableWidget_2.item(row, 6).text())
+            self.lineEdit_13.setText(datetime.now().strftime(self.tableWidget_2.item(row, 7).text()))
+            self.textEdit.setPlainText(self.tableWidget_2.item(row, 8).text())
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     sql.CreateTable()
-    window = Prog()
+    window = Clothing()
     sys.exit(app.exec_())
