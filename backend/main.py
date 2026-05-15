@@ -1,16 +1,43 @@
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from ConnactSQL import Sql
 from backend.models import UserRegistration, OrderCreate, InfoUser, UserLogin
-import os
-import sys
 from datetime import datetime
 import hashlib
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "..", "database", "shop.db")
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR.parent / "frontend"
+STATIC_DIR = FRONTEND_DIR / "static"
+PRODUCT_IMAGES_DIR = BASE_DIR.parent / "Clothings_Photo"
+DB_PATH = BASE_DIR.parent / "database" / "shop.db"
 
 app = FastAPI(description="""This Project About Clothing Store""", version="1.0.0")
-sql = Sql(db_path)
+sql = Sql(str(DB_PATH))
+
+if not STATIC_DIR.exists():
+    STATIC_DIR.mkdir(parents=True, exist_ok=True)
+if not PRODUCT_IMAGES_DIR.exists():
+    PRODUCT_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+app.mount("/Clothings_Photo", StaticFiles(directory=str(PRODUCT_IMAGES_DIR)), name="product_images")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def home_page():
+    return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page():
+    return FileResponse(str(FRONTEND_DIR / "login.html"))
+
+
+@app.get("/signup", response_class=HTMLResponse)
+async def signup_page():
+    return FileResponse(str(FRONTEND_DIR / "signup.html"))
 
 
 # ============================(Users)=======================
@@ -87,6 +114,11 @@ async def signup(NewUser: UserRegistration):
         )
 
 
+@app.post("/api/signup")
+async def api_signup(NewUser: UserRegistration):
+    return await signup(NewUser)
+
+
 @app.post("/Login")
 async def login(UserLoginRequest: UserLogin):
     hashed_input = hashlib.sha256(UserLoginRequest.password.encode()).hexdigest()
@@ -113,6 +145,11 @@ async def login(UserLoginRequest: UserLogin):
         }
     else:
         raise HTTPException(status_code=401, detail="كلمة المرور غير صحيحة")
+
+
+@app.post("/api/login")
+async def api_login(UserLoginRequest: UserLogin):
+    return await login(UserLoginRequest)
 
 
 @app.post("/AddInforUser")
@@ -189,7 +226,7 @@ async def UpdateInformationUser(infouser: InfoUser):
 
 
 # ============================(Products)=======================
-@app.get("/", description="""Get All Data about Clothing""")
+@app.get("/api/products", description="""Get All Data about Clothing""")
 async def GetAllProducts():
     result = []
     fetched_product = sql.RunCode("SELECT * FROM products")
@@ -201,7 +238,8 @@ async def GetAllProducts():
                 "name": fetched_product[i][1],
                 "price": fetched_product[i][2],
                 "description": fetched_product[i][3],
-                "image": fetched_product[i][4],
+                "image_url": fetched_product[i][4],
+                "stock_quantity": fetched_product[i][5] if len(fetched_product[i]) > 5 else 0,
             }
         )
 

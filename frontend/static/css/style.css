@@ -1,0 +1,93 @@
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f5f6fb;
+    color: #222;
+    min-height: 100vh;
+}
+
+.navbar-brand {
+    letter-spacing: 0.05em;
+}
+
+.hero {
+    background: linear-gradient(180deg, rgba(13, 110, 253, 0.9), rgba(13, 110, 253, 0.7)), url('https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    padding: 110px 0;
+}
+
+.hero h1,
+.hero p {
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.product-card {
+    border: none;
+    border-radius: 22px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.product-card img {
+    height: 240px;
+    object-fit: cover;
+}
+
+.price-tag {
+    font-size: 1.2rem;
+    color: #0d6efd;
+    font-weight: 700;
+}
+
+.feature-list li {
+    margin-bottom: 1rem;
+    padding-right: 1.2rem;
+    position: relative;
+}
+
+.feature-list li::before {
+    content: '✔';
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: #0d6efd;
+}
+
+.auth-page {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+}
+
+.auth-card {
+    max-width: 420px;
+    margin: 60px auto;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 36px;
+    left: 12px;
+}
+
+.alert {
+    transition: opacity 0.2s ease;
+}
+
+#cart-count {
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 70px 0;
+    }
+    .auth-card {
+        margin: 40px 0;
+    }
+}
